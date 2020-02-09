@@ -9,4 +9,5 @@ class CustomUserAdminPanel(admin.ModelAdmin):
     exclude = ('last_login')
 admin.site.register(CustomUser,CustomUserAdminPanel)
 
+
 # Register your models here.

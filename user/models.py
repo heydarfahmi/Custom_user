@@ -1,4 +1,4 @@
-from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import User, PermissionsMixin
 from django.db import models
 
@@ -29,13 +29,47 @@ from phonenumber_field.formfields import PhoneNumberField
 
 from user.custom_validators import UserNameCustomUserValidator, NameCustomUserValidator
 
-
+## AbstractBaseUser:
 # Create your own user model by subclassing Django’s AbstractBaseUser.
 # We need to add the unique=True parameter to whatever field we are using as the USERNAME_FIELD
 # REQUIRED_FIELDS is a list of fields that will be mandatory to create a user.
 # # Note that including the USERNAME_FIELD here will give you an error when you try to run your app.
 # password doesn’t need to be added to the REQUIRED_FIELDS list.
+##PERMISSIONMIXIN:
+# PermissionsMixin; this is a really helpful model that provides you with the methods,
+# you need to work with the Django permissions module with minimal pain and suffering
+# #Note that we also need to add a get_short_name method,
+# #as Django expects a short name to be available for each user. This can be whatever field you want.
 
+
+# with out manager you wont be able to access to admin or add user
+## You’ll need to define methods for create_user , create_superuser , and get_by_natural_key at a minimum, or you will encounter errors
+##user.is_staff :this controls access to the admin site.
+# user.is_superuser : when True, the user has all available permissions
+# user.save() is saving the data from the form to the database
+## The get_by_natural_key method  should be set to whatever the id credential will be, effectively the username , or whatever you’re replacing that value with — in our use case, this is email.
+
+class CustomUserManager(BaseUserManager):
+    def create_user(self, username, email, firstName, lastName, password):
+        user = self.model(username=username, email=email, firstName=firstName, lastName=lastName)
+        user.set_password(password)
+        user.is_staff = False
+        user.is_superuser = False
+        user.save()
+        return user
+
+    def create_superuser(self, username, email, firstName, lastName, password):
+        user = self.create_user(username=username, email=email, firstName=firstName, lastName=lastName,
+                                password=password)
+        user.is_active = True
+        user.is_staff = True
+        user.is_superuser = True
+        user.save(using=self._db)
+        return user
+
+    def get_by_natural_key(self, username):
+        print(username)
+        return self.get(username=username)
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     username_validator = UserNameCustomUserValidator()
     nameString_validator = NameCustomUserValidator()
