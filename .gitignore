@@ -3,4 +3,4 @@ venv
 *.pyc
 *.sqlite3
 user/migrations
-
+doc.pdf
